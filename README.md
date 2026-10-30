@@ -329,3 +329,80 @@ Validación de rango (0-100): Se utilizó la estructura repetitiva Repetir ... H
 Transparencia en el resultado: Se agregó la instrucción para imprimir el promedio numérico exacto en pantalla.
 
 Condición de recuperación: Se implementó una lógica intermedia donde un promedio entre 50 y 59 otorga una oportunidad de recuperación en lugar de un fallo definitivo.
+https://www.tinkercad.com/things/cdguGrtbN20-sistema-de-servomotores
+#include <Servo.h>
+
+// 1. Definición de objetos Servo
+Servo servo1;
+Servo servo2;
+Servo servo3;
+
+// 2. Definición de pines
+const int pinBoton = 2;    // Pulsador para el Servo 1
+const int pinSwitch = 4;   // Switch deslizante para el Servo 2
+
+const int pinServo1 = 9;   // Señal del Servomotor 1
+const int pinServo2 = 10;  // Señal del Servomotor 2
+const int pinServo3 = 11;  // Señal del Servomotor 3
+
+// Variables para el movimiento independiente del Servomotor 3 (sin usar delay)
+unsigned long tiempoAnterior = 0;
+const long intervalo = 25;   // Velocidad del movimiento (menor número = más rápido)
+int anguloServo3 = 0;
+int direccion = 1;
+
+void setup() {
+  // Inicializamos los tres servomotores
+  servo1.attach(pinServo1);
+  servo2.attach(pinServo2);
+  servo3.attach(pinServo3);
+
+  // Configuramos los pines de entrada con resistencia Pull-Up interna
+  pinMode(pinBoton, INPUT_PULLUP);
+  pinMode(pinSwitch, INPUT_PULLUP);
+
+  // Posiciones iniciales
+  servo1.write(0);
+  servo2.write(0);
+  servo3.write(0);
+}
+
+void loop() {
+  // ==========================================
+  // CONDICIÓN 1: Servomotor 1 (Activado por Pulsador)
+  // ==========================================
+  if (digitalRead(pinBoton) == LOW) {
+    servo1.write(90);  
+    delay(500);        
+    servo1.write(0);   
+    delay(200);        
+  }
+
+  // ==========================================
+  // CONDICIÓN 2: Servomotor 2 (Activado por Switch)
+  // ==========================================
+  if (digitalRead(pinSwitch) == LOW) {
+    servo2.write(0);   
+  } else {
+    servo2.write(180); 
+  }
+
+  // ==========================================
+  // CONDICIÓN 3: Servomotor 3 (Independiente y Autónomo)
+  // ==========================================
+  // Realiza un movimiento de vaivén continuo sin bloquear el código
+  unsigned long tiempoActual = millis();
+  
+  if (tiempoActual - tiempoAnterior >= intervalo) {
+    tiempoAnterior = tiempoActual; // Actualizamos el tiempo
+    
+    anguloServo3 += direccion;     // Sumamos o restamos al ángulo actual
+    
+    // Si llega a los extremos (0° o 180°), invertimos la dirección
+    if (anguloServo3 >= 180 || anguloServo3 <= 0) {
+      direccion = -direccion;
+    }
+    
+    servo3.write(anguloServo3);    // Movemos el servo
+  }
+}
